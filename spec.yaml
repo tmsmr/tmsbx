@@ -1,0 +1,25 @@
+schemaVersion: "2"
+kind: sandbox
+name: tmsbx
+version: "v0.0.1"
+displayName: Thomas' opinionated Sanbox
+description: "Docker Sandbox for OpenCode with the toolchains and configurations i like"
+sourceURL: https://github.com/tmsmr/tmsbx
+licenses:
+  - MIT
+locked:
+  - sandbox.image
+security:
+  privileged: false
+
+sandbox:
+  image: "tmsmr/tmsbx:v0.0.1"
+
+permissions:
+  network:
+    allow:
+      - "*"
+
+setup:
+  install:
+    - command: "exit 0"
