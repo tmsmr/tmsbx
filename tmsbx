@@ -1,0 +1,28 @@
+#!/bin/sh
+# tmsbx - wrapper around `sbx run` that includes all mixins from ./mixins
+# Works on Linux and macOS with a plain POSIX shell. No extra software needed.
+
+set -eu
+
+# Resolve the directory this script lives in (also works when invoked via symlink).
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+MIXINS_DIR="$SCRIPT_DIR/mixins"
+
+# Collect all mixins (directories containing a spec.yaml).
+MIXIN_ARGS=""
+if [ -d "$MIXINS_DIR" ]; then
+    for mixin in "$MIXINS_DIR"/*; do
+        if [ -d "$mixin" ] && [ -f "$mixin/spec.yaml" ]; then
+            MIXIN_ARGS="$MIXIN_ARGS --kit '$mixin'"
+        fi
+    done
+fi
+
+if [ -z "$MIXIN_ARGS" ]; then
+    echo "tmsbx: no mixins found in $MIXINS_DIR" >&2
+    exit 1
+fi
+
+# Run the sandbox with all mixins, forwarding any extra arguments.
+eval "set -- $MIXIN_ARGS \"\$@\""
+exec sbx run "$SCRIPT_DIR" "$@"

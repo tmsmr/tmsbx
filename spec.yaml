@@ -13,13 +13,18 @@ security:
   privileged: false
 
 sandbox:
-  image: "tmsmr/tmsbx:v0.0.1"
-
-permissions:
-  network:
-    allow:
-      - "*"
+  image: "docker.io/docker/sandbox-templates:shell-docker"
 
 setup:
   install:
-    - command: "exit 0"
+    - command: |
+        apt update \
+          && apt upgrade -y \
+          && apt install --no-install-recommends -y \
+          wget  \
+          silversearcher-ag \
+          emacs-nox \
+          tmux \
+          lsb-release \
+          htop \
+          && apt clean

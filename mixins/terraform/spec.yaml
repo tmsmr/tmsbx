@@ -1,0 +1,22 @@
+schemaVersion: "2"
+kind: mixin
+name: terraform
+version: "v0.0.1"
+licenses:
+  - MIT
+
+security:
+  privileged: false
+
+setup:
+  install:
+    - command: wget -O - https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring
+    - command: echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list
+    - command: apt update && apt install terraform
+
+
+permissions:
+  network:
+    allow:
+      - apt.releases.hashicorp.com
+      - registry.terraform.io

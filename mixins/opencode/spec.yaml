@@ -1,0 +1,39 @@
+schemaVersion: "2"
+kind: mixin
+name: opencode
+version: "v0.0.1"
+licenses:
+  - MIT
+
+security:
+  privileged: false
+
+setup:
+  install:
+    - command: |
+        curl -fsSL https://opencode.ai/install | bash
+      user: "agent"
+
+credentials:
+  - service: heimdall-basic-auth
+    apiKey:
+      name: HEIMDALL_BASIC_AUTH
+      proxyManaged: true
+      inject:
+        - domain: xxx
+          header: Authorization
+          format: "Basic %s"
+  - service: heimdall-api-key
+    apiKey:
+      name: HEIMDALL_API_KEY
+      proxyManaged: true
+      inject:
+        - domain: xxx
+          header: x-bf-vk
+          format: "%s"
+
+permissions:
+  network:
+    allow:
+      - opencode.ai
+      - xxx
