@@ -1,0 +1,12 @@
+schemaVersion: "1"
+name: tmsbx-eval
+agent: tmsbx-opencode
+workspace: ./
+
+kits:
+  - tmsmr/tmsbx-opencode:1.18.32
+  - tmsmr/tmsbx-go:1.27.1
+  - source: ./tmsbx-bifrost-config
+    args:
+      bifrost_fqdn: bifrost.example.com
+      bifrost_models: "model1;model2"

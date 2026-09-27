@@ -1,0 +1,93 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+displayName: TMSBX Bifrost OpenCode configuration
+kind: mixin
+
+args:
+  bifrost_fqdn:
+    required: true
+  bifrost_models:
+    required: true
+
+capabilities:
+  - type: com.docker.sandbox/lifecycle@1
+    config:
+      files:
+        - path: /home/agent/.config/opencode/opencode.json
+          content: |
+            {
+              "$schema": "https://opencode.ai/config.json",
+              "enabled_providers": [
+                "bifrost"
+              ],
+              "permission": {
+                "*": "allow"
+              },
+              "provider": {
+                "bifrost": {
+                  "npm": "@ai-sdk/openai-compatible",
+                  "name": "TMSBX Bifrost",
+                  "options": {
+                    "baseURL": "https://${{ kit.args.bifrost_fqdn }}/openai"
+                  },
+                  "models": {}
+                }
+              },
+              "mcp": {}
+            }
+
+        - path: /home/agent/utils/write-models.py
+          content: |
+            #!/usr/bin/env python3
+            
+            import json
+            import os
+            import re
+            
+            OPENCODE_CONFIG_PATH = os.path.expanduser(os.getenv("OPENCODE_CONFIG_PATH"))
+            OPENCODE_BIFROST_MODELS = os.getenv("OPENCODE_BIFROST_MODELS")
+            
+            with open(OPENCODE_CONFIG_PATH, "r", encoding="utf-8") as f:
+              content = json.load(f)
+              content["provider"]["bifrost"]["models"] = {}
+            
+            for model in OPENCODE_BIFROST_MODELS.split(";"):
+              content["provider"]["bifrost"]["models"][model] = {"name": model}
+            
+            with open(OPENCODE_CONFIG_PATH, "w", encoding="utf-8") as f:
+              json.dump(content, f, indent=4)
+
+      startup:
+        - command: |
+            OPENCODE_CONFIG_PATH="~/.config/opencode/opencode.json" \
+            OPENCODE_BIFROST_MODELS="${{ kit.args.bifrost_models }}" \
+            python3 ~/utils/write-models.py
+          user: "agent"
+
+  - type: com.docker.sandbox/network-policy@2
+    config:
+      runtime:
+        allow:
+          - ${{ kit.args.bifrost_fqdn }}
+
+  - type: com.docker.sandbox/credential@1
+    config:
+      service: bifrost-virtual-key
+      phase: runtime
+      apiKey:
+        proxyManaged: true
+        inject:
+          - domain: ${{ kit.args.bifrost_fqdn }}
+            header: "x-bf-vk"
+            format: "%s"
+
+  - type: com.docker.sandbox/credential@1
+    config:
+      service: bifrost-basic-auth
+      phase: runtime
+      apiKey:
+        proxyManaged: true
+        inject:
+          - domain: ${{ kit.args.bifrost_fqdn }}
+            header: "Authorization"
+            format: "Basic %s"
