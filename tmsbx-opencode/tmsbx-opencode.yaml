@@ -1,0 +1,15 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+displayName: TMSBX OpenCode Agent
+kind: workload
+
+args:
+  version:
+    required: true
+    pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+    buildArg: OPENCODE_VERSION
+
+provides: [ "de.tmsmr/tmsbx-opencode@${{ kit.args.version }}" ]
+
+capabilities:
+  - type: com.docker.sandbox/sbx@1
